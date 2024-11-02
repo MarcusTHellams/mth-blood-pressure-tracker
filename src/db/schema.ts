@@ -11,4 +11,8 @@ export const readingsTable = sqliteTable('bp_readings', {
 });
 
 export type Readings = typeof readingsTable.$inferSelect;
+export type ClientResponseReading = Omit<
+	typeof readingsTable.$inferSelect,
+	'createdAt'
+> & { createdAt: string };
 export type ReadingsInsert = typeof readingsTable.$inferInsert;
