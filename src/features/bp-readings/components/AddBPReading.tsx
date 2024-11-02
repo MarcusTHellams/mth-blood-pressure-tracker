@@ -16,9 +16,13 @@ import {
 	Input,
 } from '@/components';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { InferType, number, object } from 'yup';
+import axios from 'axios';
+import { type Readings } from '@/db';
+import { toast } from 'sonner';
 
 const schema = object({
 	systolic: number()
@@ -46,9 +50,35 @@ export const AddBPReading = () => {
 			systolic: 0,
 		},
 	});
+	const bpLoadingRef = useRef<ReturnType<typeof toast.loading>>();
+
+	const { mutate, isPending } = useMutation<Readings, Error, TrackerFormValues>(
+		{
+			mutationKey: ['addBPReading'],
+			async mutationFn(values) {
+				return (await axios.post('/api/bp-readings', values)).data;
+			},
+			onMutate() {
+				bpLoadingRef.current = toast.loading('Adding BP Reading...');
+			},
+			onSuccess() {
+				toast.success('Added BP Reading');
+				form.reset();
+				setModalOpen(false);
+			},
+			onError(error) {
+				toast.error(`Failed to add BP Reading: ${error.message}`);
+			},
+			onSettled() {
+				if (bpLoadingRef.current) {
+					toast.dismiss(bpLoadingRef.current);
+				}
+			},
+		}
+	);
 
 	const submitHandler = form.handleSubmit((values) => {
-		console.log(values);
+		mutate(values);
 	});
 	return (
 		<>
@@ -115,7 +145,12 @@ export const AddBPReading = () => {
 									)}
 								/>
 							</div>
-							<Button variant="outline" className="w-full mt-4" type="submit">
+							<Button
+								disabled={isPending}
+								variant="outline"
+								className="w-full mt-4"
+								type="submit"
+							>
 								Submit
 							</Button>
 						</form>
