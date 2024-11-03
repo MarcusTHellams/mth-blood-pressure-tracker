@@ -4,11 +4,12 @@ const Home = () => {
 	return (
 		<main className="container my-16 mx-auto px-5">
 			<h1 className="text-center">Blood Pressure Tracker</h1>
-			<AddBPReading />
+			<div className="text-center">
+				<AddBPReading />
+			</div>
 			<div className="my-8">
 				<BPChart />
 			</div>
-			<AddBPReading />
 		</main>
 	);
 };
