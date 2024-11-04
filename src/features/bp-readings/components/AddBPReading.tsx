@@ -16,13 +16,14 @@ import {
 	Input,
 } from '@/components';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { InferType, number, object } from 'yup';
 import axios from 'axios';
 import { type Readings } from '@/db';
 import { toast } from 'sonner';
+import { useQueryKeyStore } from '@/features/bp-readings/contexts';
 
 const schema = object({
 	systolic: number()
@@ -42,6 +43,8 @@ const schema = object({
 type TrackerFormValues = InferType<typeof schema>;
 
 export const AddBPReading = () => {
+	const queryKey = useQueryKeyStore((state) => state.queryKey);
+	const queryClient = useQueryClient();
 	const [modalOpen, setModalOpen] = useState(false);
 	const form = useForm<TrackerFormValues>({
 		resolver: yupResolver(schema),
@@ -58,7 +61,7 @@ export const AddBPReading = () => {
 			async mutationFn(values) {
 				return (await axios.post('/api/bp-readings', values)).data;
 			},
-			onMutate() {
+			async onMutate() {
 				bpLoadingRef.current = toast.loading('Adding BP Reading...');
 			},
 			onSuccess() {
@@ -73,6 +76,7 @@ export const AddBPReading = () => {
 				if (bpLoadingRef.current) {
 					toast.dismiss(bpLoadingRef.current);
 				}
+				queryClient.invalidateQueries({ queryKey });
 			},
 		}
 	);

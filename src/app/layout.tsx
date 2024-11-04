@@ -10,6 +10,7 @@ import {
 	SignedOut,
 	UserButton,
 } from '@clerk/nextjs';
+import { QueryKeyProvider } from '@/features/bp-readings/contexts';
 
 const geistSans = localFont({
 	src: './fonts/GeistVF.woff',
@@ -46,7 +47,9 @@ export default function RootLayout({
 							<UserButton />
 						</SignedIn>
 					</header>
-					<QueryClientProvider>{children}</QueryClientProvider>
+					<QueryClientProvider>
+						<QueryKeyProvider>{children}</QueryKeyProvider>
+					</QueryClientProvider>
 					<Toaster richColors position="top-center" />
 				</body>
 			</html>

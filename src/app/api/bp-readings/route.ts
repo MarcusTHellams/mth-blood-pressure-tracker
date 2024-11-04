@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 	const { diastolic, systolic } = await request.json();
 	const [reading] = await db
 		.insert(readingsTable)
-		.values({ diastolic, systolic })
+		.values({ diastolic, systolic, createdAt: new Date() })
 		.returning();
 	return NextResponse.json(reading);
 }

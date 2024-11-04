@@ -7,7 +7,6 @@ export default clerkMiddleware(async (auth, req) => {
 	const { redirectToSignIn, userId } = await auth();
 	const isApiRoute = req.nextUrl.pathname.includes('api');
 
-	console.log('req: ', req.nextUrl.pathname);
 	if (isProtectedRoute(req)) {
 		if (isApiRoute && !userId) {
 			return NextResponse.json(

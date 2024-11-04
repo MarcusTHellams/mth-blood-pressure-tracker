@@ -1,31 +1,30 @@
 'use client';
 
-import { type Readings } from '@/db';
-import { type DateRange } from 'react-day-picker';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { LineChart, Line, XAxis, CartesianGrid, YAxis } from 'recharts';
-import { dateFormatter } from '@/features/bp-readings/utils';
-import { unparse } from 'papaparse';
-import { saveAs } from 'file-saver';
-import { subDays, format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import {
 	Button,
+	Calendar,
 	type ChartConfig,
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
-	ToggleGroup,
-	ToggleGroupItem,
-	Calendar,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
+	ToggleGroup,
+	ToggleGroupItem,
 } from '@/components';
+import { type Readings } from '@/db';
+import { dateFormatter } from '@/features/bp-readings/utils';
+import { cn } from '@/lib/utils';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { addDays, format } from 'date-fns';
+import { saveAs } from 'file-saver';
+import { CalendarIcon } from 'lucide-react';
+import { unparse } from 'papaparse';
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 
 import axios from 'axios';
-import { useMemo, useState } from 'react';
+import { useQueryKeyStore } from '../contexts';
 
 const chartConfig = {
 	systolic: {
@@ -41,36 +40,18 @@ const chartConfig = {
 type DaysAgo = '30' | '60' | '90' | '';
 
 export const BPChart = () => {
-	const [daysAgo, _setDaysAgo] = useState<DaysAgo>('30');
-	const [dateRange, _setDateRange] = useState<DateRange>();
-
-	const [startDate, endDate] = useMemo(() => {
-		let now = new Date();
-		let startDate: Date;
-
-		if (dateRange && dateRange.from && dateRange.to) {
-			startDate = dateRange.from;
-			now = dateRange.to;
-			return [
-				startDate.toISOString().split('T')[0],
-				now.toISOString().split('T')[0],
-			] as const;
-		}
-
-		if (daysAgo) {
-			startDate = subDays(now, +daysAgo);
-			return [
-				startDate.toISOString().split('T')[0],
-				now.toISOString().split('T')[0],
-			] as const;
-		}
-		return ['', ''] as const;
-	}, [daysAgo, dateRange]);
+	const [readingsKey, startDate, endDate] = useQueryKeyStore(
+		(state) => state.queryKey
+	);
+	const updateDateRange = useQueryKeyStore((state) => state.updateDateRange);
+	const updateDaysAgo = useQueryKeyStore((state) => state.updateDaysAgo);
+	const daysAgo = useQueryKeyStore((state) => state.daysAgo);
+	const dateRange = useQueryKeyStore((state) => state.dateRange);
 
 	const queryEnabled = !!startDate && !!endDate;
 
 	const { data = [] } = useQuery({
-		queryKey: ['bpReadings', startDate, endDate],
+		queryKey: [readingsKey, startDate, endDate],
 		enabled: queryEnabled,
 		async queryFn() {
 			return (
@@ -101,22 +82,6 @@ export const BPChart = () => {
 		);
 	};
 
-	function setDaysAgo(updaterOrValue: React.SetStateAction<DaysAgo>) {
-		_setDaysAgo(updaterOrValue);
-		_setDateRange(undefined);
-	}
-
-	function setDateRange(
-		updaterOrValue: React.SetStateAction<DateRange | undefined>
-	) {
-		_setDateRange(updaterOrValue);
-		if (updaterOrValue === undefined) {
-			_setDaysAgo('30');
-		} else {
-			_setDaysAgo('');
-		}
-	}
-
 	return (
 		<>
 			<div className="flex flex-col md:flex-row gap-3 justify-center mb-4">
@@ -125,7 +90,7 @@ export const BPChart = () => {
 					variant="outline"
 					type="single"
 					value={daysAgo}
-					onValueChange={(value) => setDaysAgo(value as DaysAgo)}
+					onValueChange={(value) => updateDaysAgo(value as DaysAgo)}
 				>
 					<ToggleGroupItem className="border-r-0 rounded-r-none" value="30">
 						30 Days
@@ -158,15 +123,15 @@ export const BPChart = () => {
 						</Button>
 					</PopoverTrigger>
 					<PopoverContent className="w-auto p-0">
-            <Calendar
-              showOutsideDays
-							disabled={(date) => date > new Date()}
+						<Calendar
+							showOutsideDays
+							disabled={(date) => date > addDays(new Date(), 1)}
 							numberOfMonths={2}
 							captionLayout="dropdown"
 							className="not-prose"
 							mode="range"
 							selected={dateRange}
-							onSelect={setDateRange}
+							onSelect={updateDateRange}
 							initialFocus
 						/>
 					</PopoverContent>
@@ -193,7 +158,7 @@ export const BPChart = () => {
 							dataKey="systolic"
 							type="monotone"
 							stroke="var(--color-systolic)"
-              strokeWidth={2}
+							strokeWidth={2}
 							dot={true}
 						/>
 						<Line
