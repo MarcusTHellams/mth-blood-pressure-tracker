@@ -172,7 +172,7 @@ export const BPChart = () => {
 					</PopoverContent>
 				</Popover>
 			</div>
-			<div className="flex justify-center">
+			<div className="flex md:justify-center">
 				<ChartContainer className="w-[80vw] md:w-[50vw]" config={chartConfig}>
 					<LineChart accessibilityLayer data={data}>
 						<CartesianGrid vertical={false} />
@@ -193,7 +193,7 @@ export const BPChart = () => {
 							dataKey="systolic"
 							type="monotone"
 							stroke="var(--color-systolic)"
-							strokeWidth={2}
+              strokeWidth={2}
 							dot={true}
 						/>
 						<Line
