@@ -7,6 +7,7 @@ import {
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
+	ChartLegend,
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
@@ -137,46 +138,62 @@ export const BPChart = () => {
 					</PopoverContent>
 				</Popover>
 			</div>
-			<div className="flex md:justify-center">
-				<ChartContainer className="w-[80vw] md:w-[50vw]" config={chartConfig}>
-					<LineChart accessibilityLayer data={data}>
-						<CartesianGrid vertical={false} />
-						<XAxis
-							dataKey="createdAt"
-							tickLine={true}
-							axisLine={true}
-							tickMargin={8}
-							tickFormatter={(value) => dateFormatter(value)}
-						/>
-						<YAxis />
-						<ChartTooltip
-							cursor={true}
-							labelFormatter={(value) => dateFormatter(value)}
-							content={<ChartTooltipContent />}
-						/>
-						<Line
-							dataKey="systolic"
-							type="monotone"
-							stroke="var(--color-systolic)"
-							strokeWidth={2}
-							dot={true}
-						/>
-						<Line
-							dataKey="diastolic"
-							type="monotone"
-							stroke="var(--color-diastolic)"
-							strokeWidth={2}
-							dot={true}
-						/>
-					</LineChart>
-				</ChartContainer>
-			</div>
-			{!!data.length && (
-				<div className="text-center mt-4">
-					<Button size="lg" variant="link" onClick={downloadCsvHandler}>
-						DownLoad to CSV
-					</Button>
-				</div>
+			{data.length ? (
+				<>
+					<div className="flex md:justify-center">
+						<ChartContainer
+							className="w-[80vw] md:w-[50vw]"
+							config={chartConfig}
+						>
+							<LineChart accessibilityLayer data={data}>
+								<CartesianGrid vertical={false} />
+								<XAxis
+									dataKey="createdAt"
+									tickLine={true}
+									axisLine={true}
+									tickMargin={8}
+									tickFormatter={(value) => dateFormatter(value)}
+								/>
+								<YAxis />
+								<ChartTooltip
+									cursor={true}
+									labelFormatter={(value) => dateFormatter(value)}
+									content={<ChartTooltipContent />}
+								/>
+								<ChartLegend
+									iconType="square"
+									verticalAlign="top"
+									height={36}
+								/>
+								<Line
+									name="Systolic"
+									dataKey="systolic"
+									type="monotone"
+									stroke="var(--color-systolic)"
+									strokeWidth={2}
+									dot={true}
+								/>
+								<Line
+									name="Diastolic"
+									dataKey="diastolic"
+									type="monotone"
+									stroke="var(--color-diastolic)"
+									strokeWidth={2}
+									dot={true}
+								/>
+							</LineChart>
+						</ChartContainer>
+					</div>
+					{!!data.length && (
+						<div className="text-center mt-4">
+							<Button size="lg" variant="link" onClick={downloadCsvHandler}>
+								DownLoad to CSV
+							</Button>
+						</div>
+					)}
+				</>
+			) : (
+				<h3 className="text-center">No Data to Show</h3>
 			)}
 		</>
 	);
