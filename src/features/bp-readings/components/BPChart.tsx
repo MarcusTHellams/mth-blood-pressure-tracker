@@ -66,15 +66,27 @@ export const BPChart = () => {
 
 	const downloadCsvHandler = () => {
 		const csv = unparse(
-			data.map((bp) => {
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				const { createdAt, readingId, ...rest } = bp;
-				const _createdAt = dateFormatter(createdAt as unknown as string);
-				return {
-					Date: _createdAt,
-					'Blood Pressure': `${rest.systolic}/${rest.diastolic}`,
-				};
-			})
+			data
+				.map((bp) => {
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					const { createdAt, readingId, ...rest } = bp;
+					const _createdAt = dateFormatter(createdAt as unknown as string);
+					return {
+						Date: _createdAt,
+						'Blood Pressure': `${rest.systolic}/${rest.diastolic}`,
+					};
+				})
+				.sort((a, b) => {
+					if (a.Date > b.Date) {
+						return -1;
+					}
+
+					if (a.Date < b.Date) {
+						return 1;
+					}
+
+					return 0;
+				})
 		);
 		const blob = new Blob([csv], { type: 'text/csv' });
 		saveAs(
